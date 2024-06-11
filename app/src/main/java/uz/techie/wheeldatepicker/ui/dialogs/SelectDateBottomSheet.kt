@@ -93,6 +93,7 @@ fun SelectDateBottomSheet(
             InfiniteCircularList(
                 items = DateWrapper.getMonth(),
                 initialItem = selectedMonth,
+                itemToString = {it.toString().take(3)},
                 onItemSelected = { _, item -> selectedMonth = item },
                 modifier = Modifier.weight(1f),
             )
