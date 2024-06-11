@@ -1,5 +1,6 @@
 package uz.techie.wheeldatepicker.ui.dialogs
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
@@ -46,8 +47,10 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 import kotlin.math.asin
 import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +63,10 @@ fun SelectDateBottomSheet(
     var selectedMonth by remember { mutableStateOf(initLocalDate.month) }
     var selectedYear by remember { mutableStateOf(initLocalDate.year) }
 
-    LaunchedEffect(selectedDay,selectedMonth,selectedYear) {
+    val selectedTextColor = Color.Black
+    val textColor = Color.Gray
+
+    LaunchedEffect(selectedDay, selectedMonth, selectedYear) {
         onSelectDate(
             LocalDate(
                 year = selectedYear,
@@ -87,14 +93,18 @@ fun SelectDateBottomSheet(
                 items = DateWrapper.getDays(selectedMonth, selectedYear),
                 initialItem = selectedDay,
                 onItemSelected = { _, item -> selectedDay = item },
+                textColor = textColor,
+                selectedTextColor = selectedTextColor,
                 modifier = Modifier.widthIn(min = 30.dp),
             )
             Spacer(modifier = Modifier.width(32.dp))
             InfiniteCircularList(
                 items = DateWrapper.getMonth(),
                 initialItem = selectedMonth,
-                itemToString = {it.toString().take(3)},
+                itemToString = { it.toString().take(3) },
                 onItemSelected = { _, item -> selectedMonth = item },
+                textColor = textColor,
+                selectedTextColor = selectedTextColor,
                 modifier = Modifier.weight(1f),
             )
             Spacer(modifier = Modifier.width(32.dp))
@@ -102,6 +112,8 @@ fun SelectDateBottomSheet(
                 items = DateWrapper.getYears(),
                 initialItem = selectedYear,
                 onItemSelected = { _, item -> selectedYear = item },
+                textColor = textColor,
+                selectedTextColor = selectedTextColor,
                 modifier = Modifier,
             )
         }
@@ -183,12 +195,15 @@ inline fun <reified T> InfiniteCircularList(
 
                         alphaRadian = asin(posY / r)
                         val alphaDegree = alphaRadian * (180 / PI).toFloat()
-
                         scale = 0.3f + 0.7f * cos(alphaRadian)
                         rotationX = alphaDegree
 
                         val isItemSelected = alphaDegree in -10f..10f
-                        contentColor = if (isItemSelected) selectedTextColor else textColor
+                        contentColor = if (isItemSelected) {
+                            selectedTextColor
+                        } else {
+                            textColor.copy(alpha = (r-posY.absoluteValue)/r)
+                        }
 
                         if (isItemSelected) {
                             onItemSelected(i, item)
